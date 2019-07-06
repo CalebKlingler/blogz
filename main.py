@@ -29,12 +29,14 @@ def index():
         db.session.add(new_blog)
         db.session.commit()
     
-  
-    blogs = Blog.query.all()
-    
-
-    return render_template('build-a-blog.html', title="Build a Blog", blogs=blogs)
-
+    if request.args.get('id'):
+        blog_id = request.args.get('id')
+        
+        blogs = Blog.query.filter_by(id=blog_id).all()
+        return render_template('single_blog.html', blogs=blogs)
+    else:
+        blogs = Blog.query.all()
+        return render_template('build-a-blog.html', title="Build a Blog", blogs=blogs)
 
 @app.route('/newpost', methods=["GET", "POST"])
 def newpost():
