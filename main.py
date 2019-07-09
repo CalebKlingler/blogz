@@ -25,6 +25,8 @@ def index():
     if request.method == 'POST':
         title = request.form['title']
         body = request.form['body']
+        if title =='' or body =='':
+            return render_template('newpost.html', error = "Please enter both a title and a body for your new blog.")
         new_blog = Blog(title,body)
         db.session.add(new_blog)
         db.session.commit()
