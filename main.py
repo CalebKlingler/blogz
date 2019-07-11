@@ -3,7 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
 app.config['DEBUG'] = True
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://build-a-blog:password@localhost:8889/build-a-blog'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://blogz:blogz@localhost:8889/blogz'
 app.config['SQLALCHEMY_ECHO'] = True
 
 db = SQLAlchemy(app)
@@ -39,14 +39,17 @@ def require_login():
     if request.endpoint not in allowed_routes and'username' not in session:
         return redirect('/login')
 
+
+
 @app.route('/blog', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
         title = request.form['title']
         body = request.form['body']
+        owner = User.query.filter_by(username=session['username']).first()
         if title =='' or body =='':
             return render_template('newpost.html', error = "Please enter both a title and a body for your new blog.")
-        new_blog = Blog(title,body)
+        new_blog = Blog(title, body, owner)
         db.session.add(new_blog)
         db.session.commit()
     
