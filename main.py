@@ -35,14 +35,19 @@ class User(db.Model):
 
 @app.before_request
 def require_login():
-    allowed_routes = ['login', 'register', 'blog']
+    allowed_routes = ['login', 'register', 'blog','index']
     if request.endpoint not in allowed_routes and'username' not in session:
         return redirect('/login')
+
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    users = User.query.all()
+    return render_template('index.html', users=users)
 
 
 
 @app.route('/blog', methods=['GET', 'POST'])
-def index():
+def blog():
     if request.method == 'POST':
         title = request.form['title']
         body = request.form['body']
@@ -52,14 +57,24 @@ def index():
         new_blog = Blog(title, body, owner)
         db.session.add(new_blog)
         db.session.commit()
+        blog_id = new_blog.id
+        blogs = Blog.query.filter_by(id=blog_id).all()
+        return render_template('single_blog.html', blogs=blogs)
     
     if request.args.get('id'):
         blog_id = request.args.get('id')
         
         blogs = Blog.query.filter_by(id=blog_id).all()
         return render_template('single_blog.html', blogs=blogs)
+    
+    if request.args.get('user'):
+        username = request.args.get('user')
+        user = User.query.filter_by(username=username).first()
+        blogs = Blog.query.filter_by(owner_id=user.id).all()
+        return render_template('build-a-blog.html', title='Blogz', blogs=blogs, user=user)
     else:
         blogs = Blog.query.all()
+        users = User.query.all()
         return render_template('build-a-blog.html', title="Blogz", blogs=blogs)
 
 @app.route('/newpost', methods=["GET", "POST"])
